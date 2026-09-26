@@ -3,9 +3,20 @@
  * Publique como "App da Web" com acesso "Qualquer pessoa".
  */
 
+// pasta criada pelo próprio script no Drive de quem é dono dele
+var NOME_PASTA = 'Fotos Jean Pierre 1 ano';
+
+function pegarPasta() {
+  var pastas = DriveApp.getFoldersByName(NOME_PASTA);
+  if (!pastas.hasNext()) {
+    throw new Error('Pasta "' + NOME_PASTA + '" não encontrada no Drive');
+  }
+  return pastas.next();
+}
+
 function doPost(e) {
   try {
-    var folder = DriveApp.getFolderById('1YnEDcMlgFZfZOivTP5slYvqeNFRQSuVK');
+    var folder = pegarPasta();
     var data = JSON.parse(e.postData.contents);
 
     var fotos = data.fotos; // array de { nome, legenda, base64, mimeType }
@@ -42,4 +53,16 @@ function doPost(e) {
 
 function doGet(e) {
   return ContentService.createTextOutput('API ativa. Use POST para enviar fotos.');
+}
+
+/**
+ * Rode esta função pelo editor (botão "Executar") para conferir se o script
+ * consegue gravar na pasta. O arquivo de teste vai para a lixeira no final.
+ */
+function testarDrive() {
+  var folder = pegarPasta();
+  var file = folder.createFile('teste_autorizacao.txt', 'ok');
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  Logger.log('Pasta OK: ' + folder.getName() + ' | id: ' + folder.getId());
+  file.setTrashed(true);
 }
