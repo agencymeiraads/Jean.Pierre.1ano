@@ -105,7 +105,21 @@ button{font:inherit;color:inherit}
 .sol{position:absolute;width:clamp(78px,21vw,124px);left:-10px;top:40px;z-index:1}
 .nuvem-hero{position:absolute;width:clamp(92px,25vw,144px);right:-14px;top:122px;z-index:1}
 .eyebrow,.titulo,.letterboard{position:relative;z-index:3}
+/* rostinhos do sol e da nuvem: olham para baixo e ficam felizes ao rolar */
+.rosto,.olho,.boca,.bocao,.bochecha{transform-box:fill-box;transform-origin:center}
+.rosto{transform:translate(var(--olhar-x,0px),var(--olhar-y,0px));transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.olho{transition:transform .25s ease}
+.boca{transition:opacity .15s ease}
+.bocao{opacity:0;transform:scale(.4,.2);transition:opacity .15s ease,transform .3s cubic-bezier(.34,1.56,.64,1)}
+.bochecha{transition:transform .3s ease,opacity .3s ease}
+.feliz .olho{transform:scaleY(.3)}
+.feliz .boca{opacity:0}
+.feliz .bocao{opacity:1;transform:none}
+.feliz .bochecha{transform:scale(1.3);opacity:1}
+.sol.feliz,.nuvem-hero.feliz{animation:pulinho .5s ease-in-out infinite alternate}
+@keyframes pulinho{from{translate:0 0}to{translate:0 -5px}}
 .raios{transform-origin:60px 60px;animation:girar 46s linear infinite}
+#raiosMdf{transform-origin:160px 90px;animation:girar 30s linear infinite}
 @keyframes girar{to{transform:rotate(360deg)}}
 
 .letterboard{
@@ -136,6 +150,26 @@ section{margin-bottom:30px}
   padding:18px;box-shadow:var(--sombra-papel);
 }
 
+/* figuras animadas dos cabeçalhos */
+.cabecalho svg,.dropzone svg{overflow:visible}
+.ic-camera .flash,.ic-camera .lente,.ic-balao .corpo,.ic-sol .raios-ic,.foto-voa,.nuvem-dz,.brilhos{transform-box:fill-box}
+.ic-camera{animation:clique 3.2s ease-in-out infinite;transform-origin:50% 90%}
+.ic-camera .flash{transform-origin:center;animation:flash 3.2s ease-in-out infinite}
+.ic-camera .lente{transform-origin:center;animation:lente 3.2s ease-in-out infinite}
+@keyframes clique{0%,70%,100%{transform:rotate(0)}76%{transform:rotate(-7deg) scale(1.04)}84%{transform:rotate(4deg)}92%{transform:rotate(-1deg)}}
+@keyframes flash{0%,72%,90%,100%{transform:scale(1);fill:#FFE27A}78%{transform:scale(2.4);fill:#fff}}
+@keyframes lente{0%,72%,92%,100%{transform:scale(1)}80%{transform:scale(.85)}}
+.ic-balao .corpo{transform-origin:50% 100%;animation:flutua 3.6s ease-in-out infinite}
+@keyframes flutua{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-4px) rotate(6deg)}}
+.ic-sol .raios-ic{transform-origin:center;animation:girar 9s linear infinite}
+.ic-sol{animation:pulsa 2.4s ease-in-out infinite}
+@keyframes pulsa{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.dropzone .foto-voa{transform-origin:50% 100%;animation:fotoVoa 3s ease-in-out infinite}
+.dropzone .nuvem-dz{animation:nuvemDz 3s ease-in-out infinite}
+.dropzone .brilhos{transform-origin:center;animation:brilha 1.5s ease-in-out infinite}
+@keyframes fotoVoa{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(4deg)}}
+@keyframes nuvemDz{0%,100%{transform:translateY(0)}50%{transform:translateY(2px)}}
+@keyframes brilha{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.9)}}
 /* ---------- FORMULÁRIO ---------- */
 .campo{display:block;margin-bottom:14px}
 .campo span{display:block;font-weight:800;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--denim);margin-bottom:6px}
@@ -321,11 +355,14 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
     <svg class="sol" viewBox="0 0 120 120" aria-hidden="true">
       <g class="raios" id="raios" fill="#F2A81C"></g>
       <circle cx="60" cy="60" r="34" fill="#FFD23F" stroke="#F2A81C" stroke-width="3"/>
-      <ellipse cx="41" cy="67" rx="6.5" ry="4.5" fill="#FFACA4"/>
-      <ellipse cx="79" cy="67" rx="6.5" ry="4.5" fill="#FFACA4"/>
-      <circle cx="49" cy="55" r="4.6" fill="#3A2A12"/>
-      <circle cx="71" cy="55" r="4.6" fill="#3A2A12"/>
-      <path d="M49 69 Q60 79 71 69" fill="none" stroke="#3A2A12" stroke-width="4" stroke-linecap="round"/>
+      <g class="rosto">
+        <ellipse class="bochecha" cx="41" cy="67" rx="6.5" ry="4.5" fill="#FFACA4"/>
+        <ellipse class="bochecha" cx="79" cy="67" rx="6.5" ry="4.5" fill="#FFACA4"/>
+        <g class="olho"><circle cx="49" cy="55" r="4.6" fill="#3A2A12"/></g>
+        <g class="olho"><circle cx="71" cy="55" r="4.6" fill="#3A2A12"/></g>
+        <path class="boca" d="M49 69 Q60 79 71 69" fill="none" stroke="#3A2A12" stroke-width="4" stroke-linecap="round"/>
+        <path class="bocao" d="M47 67 Q60 67 73 67 Q71 83 60 83 Q49 83 47 67 Z" fill="#3A2A12" stroke="#3A2A12" stroke-width="2" stroke-linejoin="round"/>
+      </g>
     </svg>
 
     <svg class="nuvem-hero" viewBox="0 0 140 92" aria-hidden="true">
@@ -333,11 +370,14 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
         <circle cx="44" cy="48" r="25"/><circle cx="76" cy="38" r="30"/><circle cx="105" cy="53" r="21"/>
         <rect x="21" y="52" width="98" height="27" rx="13.5"/>
       </g>
-      <ellipse cx="57" cy="60" rx="6" ry="4" fill="#FFC7C1"/>
-      <ellipse cx="93" cy="60" rx="6" ry="4" fill="#FFC7C1"/>
-      <circle cx="64" cy="50" r="4" fill="#3A2A12"/>
-      <circle cx="86" cy="50" r="4" fill="#3A2A12"/>
-      <path d="M65 60 Q75 69 85 60" fill="none" stroke="#3A2A12" stroke-width="3.6" stroke-linecap="round"/>
+      <g class="rosto">
+        <ellipse class="bochecha" cx="57" cy="60" rx="6" ry="4" fill="#FFC7C1"/>
+        <ellipse class="bochecha" cx="93" cy="60" rx="6" ry="4" fill="#FFC7C1"/>
+        <g class="olho"><circle cx="64" cy="50" r="4" fill="#3A2A12"/></g>
+        <g class="olho"><circle cx="86" cy="50" r="4" fill="#3A2A12"/></g>
+        <path class="boca" d="M65 60 Q75 69 85 60" fill="none" stroke="#3A2A12" stroke-width="3.6" stroke-linecap="round"/>
+        <path class="bocao" d="M63 58 Q75 58 87 58 Q85 72 75 72 Q65 72 63 58 Z" fill="#3A2A12" stroke="#3A2A12" stroke-width="2" stroke-linejoin="round"/>
+      </g>
     </svg>
 
     <p class="eyebrow">Registra esse momento <em>com a gente</em>:</p>
@@ -358,11 +398,11 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
 
   <section id="ensaio">
     <div class="cabecalho">
-      <svg viewBox="0 0 40 40" aria-hidden="true">
+      <svg class="ic-camera" viewBox="0 0 40 40" aria-hidden="true">
         <rect x="4" y="12" width="32" height="23" rx="6" fill="#5B7FB0"/>
         <path d="M13.5 12l2.5-4h8l2.5 4z" fill="#5B7FB0"/>
-        <circle cx="20" cy="23.5" r="7.5" fill="#FFD23F" stroke="#F2A81C" stroke-width="2"/>
-        <circle cx="31" cy="17.5" r="1.9" fill="#FFE27A"/>
+        <circle class="lente" cx="20" cy="23.5" r="7.5" fill="#FFD23F" stroke="#F2A81C" stroke-width="2"/>
+        <circle class="flash" cx="31" cy="17.5" r="1.9" fill="#FFE27A"/>
       </svg>
       <div>
         <h2>O ensaio do Jeanzinho</h2>
@@ -440,12 +480,12 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
 
   <section id="enviar">
     <div class="cabecalho">
-      <svg viewBox="0 0 40 40" aria-hidden="true">
+      <svg class="ic-balao" viewBox="0 0 40 40" aria-hidden="true"><g class="corpo">
         <ellipse cx="20" cy="17" rx="12" ry="14" fill="#EE6C1F"/>
         <ellipse cx="15.5" cy="12" rx="3.2" ry="4.6" fill="#fff" opacity=".45" transform="rotate(-20 15.5 12)"/>
         <path d="M20 31l-3 3h6l-3-3z" fill="#C4551A"/>
         <path d="M20 34c0 4 5 2 5 5" fill="none" stroke="#2F5FB0" stroke-width="2.4" stroke-linecap="round"/>
-      </svg>
+      </g></svg>
       <div>
         <h2>Mande seus sorrisos</h2>
         <p>Tirou uma foto do Jeanzinho? Solta aqui pra gente!</p>
@@ -460,18 +500,18 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
 
       <label class="dropzone" id="dropzone" for="arquivos">
         <svg viewBox="0 0 90 86" aria-hidden="true">
-          <g stroke="#EE6C1F" stroke-width="3" stroke-linecap="round">
+          <g class="brilhos" stroke="#EE6C1F" stroke-width="3" stroke-linecap="round">
             <path d="M12 30l-4-4M12 22l4 4M78 42l4-4M78 34l-4 4"/>
           </g>
-          <g transform="rotate(-8 45 26)">
+          <g class="foto-voa"><g transform="rotate(-8 45 26)">
             <rect x="29" y="4" width="32" height="37" rx="3" fill="#fff" stroke="#2F5FB0" stroke-width="3"/>
             <rect x="33" y="8" width="24" height="23" rx="2" fill="#FFE27A"/>
             <circle cx="45" cy="19" r="7.4" fill="#FFD23F" stroke="#F2A81C" stroke-width="2"/>
             <circle cx="42.3" cy="17.3" r="1.3" fill="#3A2A12"/>
             <circle cx="47.7" cy="17.3" r="1.3" fill="#3A2A12"/>
             <path d="M42 21.6q3 2.8 6 0" fill="none" stroke="#3A2A12" stroke-width="1.8" stroke-linecap="round"/>
-          </g>
-          <g transform="translate(0 26)">
+          </g></g>
+          <g class="nuvem-dz"><g transform="translate(0 26)">
             <path d="M24 56a14 14 0 0 1-1-27.8A18 18 0 0 1 57 22a13 13 0 0 1 9 34H24z" fill="#fff" stroke="#5B7FB0" stroke-width="3" stroke-linejoin="round"/>
           </g>
           <ellipse cx="30" cy="70" rx="5" ry="3.2" fill="#FFC7C1"/>
@@ -479,6 +519,7 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
           <circle cx="37" cy="66" r="2.9" fill="#3A2A12"/>
           <circle cx="49" cy="66" r="2.9" fill="#3A2A12"/>
           <path d="M37.5 71.5q5.5 5.5 11 0" fill="none" stroke="#3A2A12" stroke-width="3" stroke-linecap="round"/>
+          </g>
         </svg>
         <strong>Toque para escolher as fotos</strong>
         <small>ou arraste aqui do computador &mdash; pode mandar várias</small>
@@ -493,11 +534,11 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
 
   <section id="galeria">
     <div class="cabecalho">
-      <svg viewBox="0 0 40 40" aria-hidden="true">
+      <svg class="ic-sol" viewBox="0 0 40 40" aria-hidden="true">
         <circle cx="20" cy="20" r="11" fill="#FFD23F" stroke="#F2A81C" stroke-width="2.5"/>
         <circle cx="16" cy="18" r="1.9" fill="#3A2A12"/><circle cx="24" cy="18" r="1.9" fill="#3A2A12"/>
         <path d="M15.5 23q4.5 4.5 9 0" fill="none" stroke="#3A2A12" stroke-width="2.4" stroke-linecap="round"/>
-        <g stroke="#EE6C1F" stroke-width="3" stroke-linecap="round">
+        <g class="raios-ic" stroke="#EE6C1F" stroke-width="3" stroke-linecap="round">
           <path d="M20 3v4M20 33v4M3 20h4M33 20h4M8 8l3 3M29 29l3 3M32 8l-3 3M11 29l-3 3"/>
         </g>
       </svg>
@@ -667,6 +708,33 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
     quadro();
   }
 
+  function animarRostinhos(){
+    var figuras = document.querySelectorAll(".sol, .nuvem-hero");
+    if (!figuras.length) return;
+    var ultimoY = window.scrollY, parar = 0, pedido = false;
+    function olhar(){
+      pedido = false;
+      var y = window.scrollY, delta = y - ultimoY;
+      ultimoY = y;
+      /* olhinhos seguem a rolagem: para baixo ao descer, para cima ao subir */
+      var alvoY = Math.max(-4, Math.min(5, delta * 0.35 + Math.min(y, 400) / 400 * 2));
+      for (var i = 0; i < figuras.length; i++){
+        figuras[i].style.setProperty("--olhar-y", alvoY.toFixed(1) + "px");
+        figuras[i].style.setProperty("--olhar-x", (i === 0 ? 1.5 : -1.5) * Math.min(y, 400) / 400 + "px");
+        if (Math.abs(delta) > 0.5) figuras[i].classList.add("feliz");
+      }
+      clearTimeout(parar);
+      parar = setTimeout(function(){
+        for (var j = 0; j < figuras.length; j++){
+          figuras[j].classList.remove("feliz");
+          figuras[j].style.setProperty("--olhar-y", (Math.min(window.scrollY, 400) / 400 * 2).toFixed(1) + "px");
+        }
+      }, 450);
+    }
+    window.addEventListener("scroll", function(){
+      if (!pedido){ pedido = true; requestAnimationFrame(olhar); }
+    }, { passive: true });
+  }
   function desenharRaios(){
     var g = document.getElementById("raios"), s = [], i;
     for (i = 0; i < 12; i++){
@@ -675,7 +743,7 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
     if (g) g.innerHTML = s.join("");
 
     var m = document.getElementById("raiosMdf"), r = [], a;
-    for (a = -84; a <= 84.1; a += 16.8){
+    for (a = 0; a < 359.9; a += 360 / 22){
       r.push('<rect x="155.5" y="10" width="9" height="18" rx="4" transform="rotate(' + a.toFixed(1) + ' 160 90)"/>');
     }
     if (m) m.innerHTML = r.join("");
@@ -1073,7 +1141,7 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
       copias++;
     }
 
-    var VELOCIDADE = 26;            /* pixels por segundo */
+    var VELOCIDADE = 38;            /* pixels por segundo */
     var ESPERA = 2600;              /* volta a andar depois de parar de mexer */
     var ciclo = 0, pos = 0, ultimo = 0;
     var arrastando = false, sobre = false, moveu = false, retomaEm = 0;
@@ -1185,6 +1253,7 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
   /* ---------- começo ---------- */
   desenharGuirlanda();
   desenharRaios();
+  animarRostinhos();
   montarCarrossel();
   desenharGaleria();
   atualizarBotao();
