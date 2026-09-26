@@ -619,9 +619,12 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
   function desenharGuirlanda(){
     var svg = document.getElementById("garland");
     if (!svg) return;
-    var L = 1000, baloes = [], i;
-    for (i = 0; i < 70; i++){
-      var t = i / 69;
+    /* no celular a guirlanda usa um trecho mais estreito: balões maiores e mais juntinhos */
+    var celular = window.innerWidth < 600;
+    var L = celular ? 640 : 1000, total = celular ? 84 : 70, baloes = [], i;
+    svg.setAttribute("viewBox", "0 0 " + L + " 230");
+    for (i = 0; i < total; i++){
+      var t = i / (total - 1);
       var curva = Math.pow(Math.sin(Math.PI * t), 0.75);
       var linha = 116 - curva * 68;
       var r = entre(15, 43);
@@ -637,7 +640,7 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
     }
     baloes.sort(function(a, b){ return b.r - a.r; });
 
-    var partes = ['<rect x="0" y="0" width="1000" height="230" fill="none"/>'];
+    var partes = ['<rect x="0" y="0" width="' + L + '" height="230" fill="none"/>'];
     baloes.forEach(function(b){
       var ry = b.r * 1.12;
       partes.push(
@@ -654,7 +657,7 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
     /* confetes soltos, como no convite */
     var confetes = ["#E9651B", "#5B7FB0", "#F9C51D", "#7FB24A"];
     for (i = 0; i < 26; i++){
-      var cx = entre(10, 990), cy = entre(120, 224);
+      var cx = entre(10, L - 10), cy = entre(120, 224);
       partes.push('<rect class="desce" x="' + cx.toFixed(1) + '" y="' + cy.toFixed(1) + '" width="' + entre(4, 9).toFixed(1) +
         '" height="4" rx="2" fill="' + confetes[Math.floor(sorte() * 4)] + '" opacity="0.85" transform="rotate(' +
         entre(-70, 70).toFixed(0) + ' ' + cx.toFixed(1) + ' ' + cy.toFixed(1) + ')"/>');
@@ -689,7 +692,7 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
       var y = Math.max(0, window.scrollY || window.pageYOffset || 0);
       var topo = hero.offsetHeight * 0.6;
       var noTopo = Math.min(y, topo), depois = Math.max(0, y - topo);
-      var escala = 1000 / (svg.clientWidth || 1000);
+      var escala = svg.viewBox.baseVal.width / (svg.clientWidth || 1000);
       itens.forEach(function(it){
         var dy = (noTopo * it.ritmo + depois * it.segue) * escala;
         var dx = it.balanco ? Math.sin(y / 260 + it.fase) * it.balanco : 0;
