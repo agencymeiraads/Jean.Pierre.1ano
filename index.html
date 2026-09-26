@@ -286,6 +286,7 @@ input[type=text]:focus{border-color:var(--denim-forte);background:#fff;outline:n
 .lightbox img{width:100%;border-radius:8px}
 .lightbox figcaption{padding:10px 6px 4px;font-weight:700;color:var(--tinta)}
 .lightbox figcaption b{display:block;font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;color:var(--denim);margin-top:4px}
+.lightbox figcaption a{display:inline-block;margin-top:6px;font-size:.8rem;font-weight:800;color:var(--denim-forte)}
 .fechar{
   position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;
   width:44px;height:44px;border-radius:50%;border:0;background:#fff;color:var(--tinta);
@@ -513,6 +514,7 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
 <div id="camadaToast"></div>
 <div id="camadaLightbox"></div>
 
+<script src="frontend-integration.js"></script>
 <script>
 (function(){
   "use strict";
@@ -604,6 +606,9 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
   }
 
   /* ---------- armazenamento ---------- */
+  /* O envio vai para o Drive (frontend-integration.js). A galeria mostra as fotos
+     que ESTE visitante mandou, montadas com a lista resultado.arquivos, e fica
+     guardada neste navegador. */
   var semEspaco = false;
   function carregar(){
     try {
@@ -624,6 +629,22 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
 
   var fotos = carregar();
   var fila = [];
+
+  /* transforma resultado.arquivos[i] ({ id, url, nomeArquivo }) em foto da galeria.
+     url é a página do Drive (não abre dentro de <img>), então a imagem vem do id;
+     a prévia local cobre o caso de o Drive não liberar a imagem */
+  function fotoDoDrive(arquivo, item, nome, previa){
+    var id = arquivo && arquivo.id;
+    return {
+      id: id || "f" + Date.now() + "-" + item.id,
+      src: id ? "https://lh3.googleusercontent.com/d/" + id + "=w1280" : previa,
+      url: (arquivo && arquivo.url) || "",
+      previa: previa,
+      legenda: item.legenda.trim(),
+      autor: nome,
+      quando: Date.now()
+    };
+  }
   var idAtual = 0;
 
   /* ---------- envio ---------- */
@@ -761,32 +782,45 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
     if (!fila.length) return;
     aviso.textContent = "";
     botao.disabled = true;
-    botao.textContent = "Guardando as fotos...";
 
     var pacote = fila.slice();
-    Promise.all(pacote.map(function(item){
-      return encolher(item.file).then(function(src){
-        return {
-          id: "f" + Date.now() + "-" + item.id,
-          src: src,
-          legenda: item.legenda.trim(),
-          autor: nome,
-          quando: Date.now()
-        };
+    try { localStorage.setItem(CHAVE_NOME, nome); } catch (err){}
+
+    /* uma chamada por foto, para cada uma levar a própria legenda;
+       enviarFotos só resolve quando o Apps Script responde sucesso: true */
+    var novas = [], falharam = [];
+    var passo = Promise.resolve();
+    pacote.forEach(function(item, i){
+      passo = passo.then(function(){
+        botao.textContent = pacote.length === 1 ? "Enviando a foto..." : "Enviando " + (i + 1) + " de " + pacote.length + "...";
+        return enviarFotos(nome, item.legenda.trim(), [item.file]).then(function(arquivos){
+          /* vai uma foto por chamada, então a dela é arquivos[0] */
+          var arquivo = Array.isArray(arquivos) ? arquivos[0] : null;
+          return encolher(item.file)
+            .catch(function(){ return ""; })
+            .then(function(previa){
+              novas.push(fotoDoDrive(arquivo, item, nome, previa));
+              URL.revokeObjectURL(item.url);
+            });
+        }).catch(function(){ falharam.push(item); });
       });
-    })).then(function(novas){
-      fotos = novas.concat(fotos);
-      salvar();
-      try { localStorage.setItem(CHAVE_NOME, nome); } catch (err){}
-      pacote.forEach(function(item){ URL.revokeObjectURL(item.url); });
-      fila = [];
+    });
+
+    passo.then(function(){
+      fila = falharam;
       desenharFila();
-      desenharGaleria();
-      festejar(novas.length, nome);
-      document.getElementById("galeria").scrollIntoView({ behavior: "smooth", block: "start" });
-    }).catch(function(){
-      aviso.textContent = "Alguma foto não abriu aqui. Tente de novo ou escolha outra.";
-      atualizarBotao();
+      if (novas.length){
+        fotos = novas.reverse().concat(fotos);
+        salvar();
+        desenharGaleria();
+        festejar(novas.length, nome);
+      }
+      if (falharam.length){
+        aviso.textContent = (falharam.length === 1 ? "1 foto não foi" : falharam.length + " fotos não foram") +
+          " — confira a internet e toque em enviar de novo.";
+      } else {
+        document.getElementById("galeria").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     });
   });
 
@@ -814,7 +848,9 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
       abrir.setAttribute("aria-label", "Ver foto maior" + (foto.legenda ? ": " + foto.legenda : ""));
 
       var img = document.createElement("img");
+      img.referrerPolicy = "no-referrer";
       img.src = foto.src;
+      trocarPelaPrevia(img, foto);
       img.loading = "lazy";
       img.alt = foto.legenda || "Foto enviada por " + foto.autor;
       abrir.appendChild(img);
@@ -860,6 +896,13 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
     }
   }
 
+  function trocarPelaPrevia(img, foto){
+    img.onerror = function(){
+      img.onerror = null;
+      if (foto.previa && img.src !== foto.previa) img.src = foto.previa;
+    };
+  }
+
   /* ---------- foto ampliada ---------- */
   var camadaLightbox = document.getElementById("camadaLightbox");
   function verGrande(foto){
@@ -871,7 +914,9 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
     caixa.innerHTML =
       '<button class="fechar" type="button" aria-label="Fechar">&times;</button>' +
       '<figure><img alt=""><figcaption></figcaption></figure>';
+    caixa.querySelector("img").referrerPolicy = "no-referrer";
     caixa.querySelector("img").src = foto.src;
+    trocarPelaPrevia(caixa.querySelector("img"), foto);
     caixa.querySelector("img").alt = foto.legenda || ("Foto enviada por " + foto.autor);
     var legenda = caixa.querySelector("figcaption");
     legenda.textContent = foto.legenda || "";
@@ -879,6 +924,14 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
       var quem = document.createElement("b");
       quem.textContent = "enviada por " + foto.autor;
       legenda.appendChild(quem);
+    }
+    if (foto.url){
+      var noDrive = document.createElement("a");
+      noDrive.href = foto.url;
+      noDrive.target = "_blank";
+      noDrive.rel = "noopener";
+      noDrive.textContent = "abrir no Drive";
+      legenda.appendChild(noDrive);
     }
 
     function fechar(){
