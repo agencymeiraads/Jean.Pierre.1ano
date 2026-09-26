@@ -261,12 +261,6 @@ input[type=text]:focus{border-color:var(--denim-forte);background:#fff;outline:n
 .foto img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;background:#EAF1FA}
 .foto .legenda{margin:8px 2px 0;font-weight:700;font-size:.88rem;line-height:1.35;color:var(--tinta);overflow-wrap:anywhere}
 .foto .autor{margin:4px 2px 0;font-size:.76rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--denim);overflow-wrap:anywhere}
-.foto .apagar{
-  position:absolute;top:-8px;right:-8px;width:28px;height:28px;border-radius:50%;
-  border:2px solid #fff;background:var(--denim);color:#fff;font-weight:800;cursor:pointer;
-  line-height:1;font-size:.9rem;box-shadow:0 3px 8px rgba(35,69,126,.3);opacity:.85;
-}
-.foto .apagar:hover{opacity:1;background:#C0554A}
 
 .vazio{
   text-align:center;padding:30px 18px;border-radius:20px;
@@ -838,7 +832,7 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
     vazio.hidden = fotos.length > 0;
     grade.innerHTML = "";
 
-    fotos.forEach(function(foto, indice){
+    fotos.forEach(function(foto){
       var li = document.createElement("li");
       li.className = "foto";
 
@@ -869,24 +863,6 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
       autor.className = "autor";
       autor.textContent = foto.autor;
       li.appendChild(autor);
-
-      var apagar = document.createElement("button");
-      apagar.type = "button";
-      apagar.className = "apagar";
-      apagar.innerHTML = "&times;";
-      apagar.setAttribute("aria-label", "Tirar esta foto do álbum");
-      apagar.addEventListener("click", function(){
-        var copia = fotos[indice];
-        fotos.splice(indice, 1);
-        salvar();
-        desenharGaleria();
-        mostrarToast("Foto tirada do álbum.", "Desfazer", function(){
-          fotos.splice(indice, 0, copia);
-          salvar();
-          desenharGaleria();
-        });
-      });
-      li.appendChild(apagar);
 
       grade.appendChild(li);
     });
