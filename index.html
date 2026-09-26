@@ -1059,9 +1059,10 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
     var originais = Array.prototype.slice.call(trilho.children);
     if (!originais.length) return;
 
-    /* repete as fotos até a esteira poder girar sem emenda */
+    /* repete as fotos até a esteira poder girar sem emenda; sempre pelo menos
+       uma cópia, senão numa tela estreita não há para onde girar */
     var copias = 1;
-    while (copias < 8 && trilho.scrollWidth < esteira.clientWidth * 2 + 400){
+    while (copias < 2 || (copias < 8 && trilho.scrollWidth < esteira.clientWidth * 2 + 400)){
       originais.forEach(function(no){
         var clone = no.cloneNode(true);
         clone.setAttribute("aria-hidden", "true");
@@ -1075,7 +1076,7 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
     var VELOCIDADE = 26;            /* pixels por segundo */
     var ESPERA = 2600;              /* volta a andar depois de parar de mexer */
     var ciclo = 0, pos = 0, ultimo = 0;
-    var meu = false, arrastando = false, sobre = false, moveu = false, retomaEm = 0;
+    var arrastando = false, sobre = false, moveu = false, retomaEm = 0;
     var calmo = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     function medir(){
@@ -1089,21 +1090,31 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
       if (pos >= ciclo) pos -= ciclo;
       else if (pos < 0) pos += ciclo;
     }
-    function irPara(x){ pos = x; meu = true; esteira.scrollLeft = pos; }
+    function irPara(x){ pos = x; esteira.scrollLeft = pos; }
 
     medir();
     pausar(1200);
 
+    /* só conta como mexida da pessoa se a posição fugiu da que o carrossel pôs;
+       no celular os eventos de rolagem chegam atrasados e embolados, e uma
+       trava de "fui eu" deixava o carrossel achando que era sempre a pessoa */
     esteira.addEventListener("scroll", function(){
-      if (meu){ meu = false; return; }
+      if (Math.abs(esteira.scrollLeft - pos) <= 3) return;
       pos = esteira.scrollLeft;
       if (ciclo && pos >= ciclo && !arrastando){ normalizar(); irPara(pos); }
       pausar(ESPERA);
     });
 
-    esteira.addEventListener("mouseenter", function(){ sobre = true; });
-    esteira.addEventListener("mouseleave", function(){ sobre = false; pausar(600); });
-    esteira.addEventListener("focusin",  function(){ sobre = true; });
+    /* parar embaixo do cursor só vale para mouse, e o foco só para quem navega
+       pelo teclado: no celular o toque "entra" e foca a foto e nunca sai,
+       e o carrossel ficava parado para sempre */
+    esteira.addEventListener("pointerenter", function(e){ if (e.pointerType === "mouse") sobre = true; });
+    esteira.addEventListener("pointerleave", function(e){ if (e.pointerType === "mouse"){ sobre = false; pausar(600); } });
+    esteira.addEventListener("focusin", function(e){
+      var teclado = true;
+      try { teclado = e.target.matches(":focus-visible"); } catch (erro) {}
+      if (teclado) sobre = true;
+    });
     esteira.addEventListener("focusout", function(){ sobre = false; pausar(600); });
     esteira.addEventListener("touchstart", function(){ pausar(ESPERA); }, { passive: true });
     esteira.addEventListener("touchend",   function(){ pausar(ESPERA); }, { passive: true });
