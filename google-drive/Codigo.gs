@@ -29,8 +29,10 @@ function doPost(e) {
         foto.nome + '_' + new Date().getTime() + '.jpg'
       );
       var file = folder.createFile(blob);
-      // qualquer pessoa com o link pode ver (é o que deixa a galeria do site mostrar a foto)
-      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      /* o arquivo herda da pasta o acesso "qualquer pessoa com o link", que é o que
+         deixa a galeria do site mostrar a foto. Não dá para redefinir isso aqui: o
+         Drive recusa sobrescrever no arquivo uma permissão herdada do pai, com
+         "Access denied". Quem controla o acesso é a pasta. */
       file.setDescription('Enviado por: ' + data.remetente + ' | Legenda: ' + foto.legenda);
 
       resultados.push({
@@ -62,7 +64,7 @@ function doGet(e) {
 function testarDrive() {
   var folder = pegarPasta();
   var file = folder.createFile('teste_autorizacao.txt', 'ok');
-  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   Logger.log('Pasta OK: ' + folder.getName() + ' | id: ' + folder.getId());
+  Logger.log('Acesso herdado pelo arquivo: ' + file.getSharingAccess());
   file.setTrashed(true);
 }

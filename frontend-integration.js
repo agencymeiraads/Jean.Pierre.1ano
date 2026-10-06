@@ -1,5 +1,5 @@
-// URL de implantação do Apps Script (cole aqui o /exec do novo deploy)
-const APPS_SCRIPT_URL = '';
+// URL de implantação do Apps Script
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz1uGeiMPnpRXoDE6dUdrjHR8ETaSbemZxAuxHRoyKYEnNHCg212HdULWAmn2IzcncP/exec';
 
 /**
  * Envia uma ou mais fotos para o Drive via Apps Script.
