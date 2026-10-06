@@ -40,6 +40,24 @@ async function enviarFotos(remetente, legenda, arquivos) {
   return resultado.arquivos;
 }
 
+/**
+ * Busca no Drive tudo que já foi enviado, para a galeria ser a mesma para
+ * todos os convidados em vez de cada um ver só o que mandou.
+ * @returns {Promise<Array<{id, url, autor, legenda, quando}>>}
+ */
+async function listarFotos() {
+  if (!APPS_SCRIPT_URL) {
+    throw new Error('APPS_SCRIPT_URL vazia — publique o Apps Script e cole a URL do deploy aqui.');
+  }
+
+  const response = await fetch(APPS_SCRIPT_URL);
+  const resultado = await response.json();
+  if (!resultado.sucesso) {
+    throw new Error(resultado.erro || 'Falha ao carregar as fotos');
+  }
+  return resultado.fotos;
+}
+
 function converterParaBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

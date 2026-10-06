@@ -42,19 +42,56 @@ function doPost(e) {
       });
     });
 
-    return ContentService
-      .createTextOutput(JSON.stringify({ sucesso: true, arquivos: resultados }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return responder({ sucesso: true, arquivos: resultados });
 
   } catch (error) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ sucesso: false, erro: error.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return responder({ sucesso: false, erro: error.toString() });
   }
 }
 
+function responder(objeto) {
+  return ContentService
+    .createTextOutput(JSON.stringify(objeto))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * O site chama isto ao abrir, para montar a galeria com tudo que já foi
+ * enviado. É o que faz o álbum ser o mesmo para todos os convidados, em vez
+ * de cada um ver só o que mandou do próprio aparelho.
+ */
 function doGet(e) {
-  return ContentService.createTextOutput('API ativa. Use POST para enviar fotos.');
+  try {
+    var folder = pegarPasta();
+    var arquivos = folder.getFiles();
+    var fotos = [];
+
+    while (arquivos.hasNext()) {
+      var file = arquivos.next();
+      /* a pasta pode ter outros arquivos (um teste, algo arrastado sem querer) */
+      if (file.getMimeType().indexOf('image/') !== 0) continue;
+
+      /* o doPost grava "Enviado por: X | Legenda: Y" na descrição */
+      var partes = (file.getDescription() || '')
+        .match(/^Enviado por:\s*([\s\S]*?)\s*\|\s*Legenda:\s*([\s\S]*)$/);
+
+      fotos.push({
+        id: file.getId(),
+        url: file.getUrl(),
+        autor: partes ? partes[1] : '',
+        legenda: partes ? partes[2] : '',
+        quando: file.getDateCreated().getTime()
+      });
+    }
+
+    /* mais recentes primeiro, que é a ordem em que a galeria mostra */
+    fotos.sort(function (a, b) { return b.quando - a.quando; });
+
+    return responder({ sucesso: true, fotos: fotos });
+
+  } catch (error) {
+    return responder({ sucesso: false, erro: error.toString() });
+  }
 }
 
 /**

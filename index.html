@@ -794,6 +794,41 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
       quando: Date.now()
     };
   }
+
+  /* a lista de verdade vem do Drive, para o álbum ser o mesmo em todo
+     aparelho; o localStorage virou só cache, para a galeria não nascer vazia
+     enquanto a busca não volta e para a página servir de algo sem rede */
+  function fotoDoServidor(item){
+    return {
+      id: item.id,
+      src: "https://lh3.googleusercontent.com/d/" + item.id + "=w1280",
+      url: item.url || "",
+      previa: "",
+      legenda: item.legenda || "",
+      autor: item.autor || "",
+      quando: item.quando
+    };
+  }
+
+  function sincronizarGaleria(){
+    return listarFotos().then(function(lista){
+      /* guarda as prévias locais antes de trocar a lista: foto recém-enviada
+         pode ainda não ser servida pelo Drive, e a prévia cobre esses
+         primeiros segundos até a imagem de verdade responder */
+      var previas = {};
+      fotos.forEach(function(f){ if (f.previa) previas[f.id] = f.previa; });
+
+      fotos = lista.map(function(item){
+        var foto = fotoDoServidor(item);
+        if (previas[foto.id]) foto.previa = previas[foto.id];
+        return foto;
+      });
+      salvar();
+      desenharGaleria();
+    }).catch(function(){
+      /* sem rede ou Apps Script fora do ar: fica o que o cache já mostrava */
+    });
+  }
   var idAtual = 0;
 
   /* ---------- envio ---------- */
@@ -963,6 +998,9 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
         salvar();
         desenharGaleria();
         festejar(novas.length, nome);
+        /* mostra a foto na hora (acima) e depois alinha com o Drive, que
+           também traz o que os outros convidados mandaram nesse meio-tempo */
+        sincronizarGaleria();
       }
       if (falharam.length){
         aviso.textContent = (falharam.length === 1 ? "1 foto não foi" : falharam.length + " fotos não foram") +
@@ -1261,6 +1299,8 @@ footer strong{font-family:"Baloo 2",sans-serif;color:var(--tinta)}
   animarRostinhos();
   montarCarrossel();
   desenharGaleria();
+  /* o cache aparece na hora; a lista de verdade chega logo atrás */
+  sincronizarGaleria();
   atualizarBotao();
 })();
 </script>
