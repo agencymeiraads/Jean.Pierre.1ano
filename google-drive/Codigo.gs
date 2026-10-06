@@ -68,3 +68,17 @@ function testarDrive() {
   Logger.log('Acesso herdado pelo arquivo: ' + file.getSharingAccess());
   file.setTrashed(true);
 }
+
+/**
+ * Rode uma vez pelo editor para deixar a pasta como "qualquer pessoa com o
+ * link pode ver". Os arquivos criados dentro herdam esse acesso, que é o que
+ * a galeria do site precisa para exibir a foto. Com acesso de leitura (e não
+ * de edição), ninguém de fora consegue apagar as fotos dos convidados; o
+ * envio continua funcionando porque o script grava como o dono da pasta.
+ */
+function ajustarAcessoDaPasta() {
+  var folder = pegarPasta();
+  folder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  Logger.log('Acesso da pasta: ' + folder.getSharingAccess() +
+             ' | permissão: ' + folder.getSharingPermission());
+}
