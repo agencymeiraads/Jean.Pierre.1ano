@@ -1,5 +1,5 @@
-// URL de implantação do Apps Script
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwj0L7SouhMZ0O-DBY19e3JY_Y4cijjs3McGkLEiUbjkTbERIGDKHQb7IvqRfmdALJZ/exec';
+// URL de implantação do Apps Script (cole aqui o /exec do novo deploy)
+const APPS_SCRIPT_URL = '';
 
 /**
  * Envia uma ou mais fotos para o Drive via Apps Script.
@@ -8,6 +8,10 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwj0L7SouhMZ0O-
  * @param {FileList|File[]} arquivos - arquivos escolhidos no input de upload
  */
 async function enviarFotos(remetente, legenda, arquivos) {
+  if (!APPS_SCRIPT_URL) {
+    throw new Error('APPS_SCRIPT_URL vazia — publique o Apps Script e cole a URL do deploy aqui.');
+  }
+
   const fotosBase64 = await Promise.all(
     Array.from(arquivos).map((file) => converterParaBase64(file))
   );
